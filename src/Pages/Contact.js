@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ContactCard from "../Components/ContactCard";
 import userImage from "../Images/default.png"
 function Contact() {
@@ -6,29 +6,42 @@ function Contact() {
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
     const [dob, setDob] = useState("");
+    // https://jsonplaceholder.typicode.com/users
+    const [jsonData, setJsonData] = useState([]);
+    useEffect(() => {
+        fetch("https://jsonplaceholder.typicode.com/users", { method: 'GET', mode: 'cors', cache: 'no-cache' })
+            .then(response => {
+                if (response.status == 200) { return response.json(); }
+                else { console.log('Backend Error..!'); console.log(response.text()); }
+            })
+            .then(data => {
+                setJsonData(data);
+            })
+            .catch(() => { console.log("Network connection error"); });
+    }, [])
     return (
         <React.Fragment>
             <div className="container mt-4 fix-display-out">
                 <div className="row">
                     {/* chat View */}
                     <div className="col-md-4  fix-display">
-                        <button className="btn btn-outline-dark form-control btn-md">
-                            <i class="fa-solid fa-plus"></i> &nbsp;
-                            Add Contacts
-                        </button>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
-                        <ContactCard name="Test"></ContactCard>
+                        {
+                            jsonData.map((val) => {
+                                return (
+                                    <ContactCard
+                                        key={val.phone}
+                                        userName={val.name}
+                                        email={val.email}
+                                        phone={val.phone}
+                                        dob="N/A"
+                                        changeFunction={[setName,setPhone,setEmail,setDob]}
+                                    >
+                                    </ContactCard>);
+                            })
+                        }
                     </div>
                     {/* profile View */}
-                    <div className="col-md-8">
+                    <div className="col-md-8 fixed-right">
                         <center><img src={userImage} className="rounded-circle mt-1" height="150"></img></center>
                         <div className="row align-items-center">
                             <div className="col-md-12 ">
@@ -75,7 +88,7 @@ function renderContactDetails(name, phone, email, dob) {
                     <div className="card-footer">
                         <div className="row">
                             <div className="col-md-4">
-                                <button className="btn btn-success form-control mt-2 "><i class="fa-solid fa-phone"></i></button>
+                                <a href={"tel:"+phone} className="btn btn-success form-control mt-2 "><i class="fa-solid fa-phone"></i></a>
                             </div>
                             <div className="col-md-4">
                                 <button className="btn btn-warning form-control mt-2 "><i class="fa-solid fa-user-pen"></i></button>
@@ -91,4 +104,13 @@ function renderContactDetails(name, phone, email, dob) {
     }
 }
 
+
+function printList(jsonData) {
+    return (
+        jsonData.map((val) => {
+            return (<Contact userName={val.name}></Contact>);
+        })
+    );
+
+}
 export default Contact;
